@@ -1,0 +1,47 @@
+# Architecture
+
+## Shape
+
+Mono OS Lite is a single-module Android app:
+
+- `:app`
+- Kotlin
+- Jetpack Compose
+- Material 3
+- No backend
+- No Firebase
+- No real sensitive data
+
+## Runtime pipeline
+
+The core pipeline lives in `app/src/main/java/com/monoos/lite/MonoEngine.kt`.
+
+1. `Intent Classifier` maps raw text to a demo intent.
+2. `Semantic Compressor` converts the command into compact task atoms.
+3. `Memory Indexer` retrieves mock context relevant to the intent.
+4. `Graph-Relational Memory Layer` emits node/relation/evidence rows.
+5. `Visual Context Index` attaches synthetic UI and app tags.
+6. `Risk Gate Engine` assigns L0-L4 risk.
+7. `Agent Router` assigns one or more agents.
+8. `Approval Manager` gates L2/L3 flows.
+9. `Cloud LLM Escalation Layer` describes simulated escalation.
+10. `Mock App Orchestrator` creates workflow statuses.
+11. `Audit Logger` records every step.
+
+## UI composition
+
+`MainActivity.kt` renders a single scrollable AI control surface:
+
+- AI launcher interface
+- Chat command box
+- Mock audio input button
+- Context permissions dashboard
+- Workflow management dashboard
+- Visual agent task review dashboard
+- Memory vault dashboard
+- Approval dashboard
+- Audit log panel
+
+## Data policy
+
+The app never reads real device content. All context is generated from local deterministic demo presets and the current command string.
