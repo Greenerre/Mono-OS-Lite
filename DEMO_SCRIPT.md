@@ -4,14 +4,15 @@
 
 1. Open Mono OS Lite.
 2. Press `Build a product roadmap for my startup idea`.
-3. Show that the intent is `Product strategy planning`.
-4. Point to semantic compression, memory context, graph rows, visual tags, and multi-agent routing.
-5. Show the Instruction layer simulation and explain that it is the OS policy packet.
-6. Press `Move $500 to my savings account`.
-7. Show `L3` risk, authentication required, and the Approval dashboard.
-8. Press `Authenticate demo gate`.
-9. Explain that only a mocked transfer shell executes and the audit log records the full trace.
-10. Show the Goal coverage dashboard for the final objective checklist.
+3. Show the human input layer: user bubble, Mono response, chat box, and mock speech-to-text strip.
+4. Show that the intent is `Product strategy planning`.
+5. Point to semantic compression, memory context, graph rows, visual tags, and multi-agent routing.
+6. Show the Instruction layer simulation and explain that it is the OS policy packet.
+7. Press `Move $500 to my savings account`.
+8. Show `L3` risk, authentication required, and the Approval dashboard.
+9. Press `Authenticate demo gate`.
+10. Explain that only a mocked transfer shell executes and the audit log records the full trace.
+11. Show the Goal coverage dashboard for the final objective checklist.
 
 ## 5-minute extended demo
 
@@ -35,6 +36,7 @@
 ## What each screen proves
 
 - AI launcher: raw intent capture through chat or mock voice.
+- Human input layer: chat bubbles and simulated speech-to-text preview.
 - Context permissions: privacy-first mock permission model.
 - Pipeline: transparent classification, compression, routing, and risk.
 - Instruction layer: visible OS policy directives before execution.
@@ -44,3 +46,4 @@
 - Approval dashboard: L2/L3 gates before sensitive execution.
 - Goal coverage: proof that required objectives are represented in the running app.
 - Audit panel: local traceability for every module.
+- Animated demo: `demo/mono-os-lite-demo.svg` gives a browser-playable storyboard when emulator capture is unavailable.

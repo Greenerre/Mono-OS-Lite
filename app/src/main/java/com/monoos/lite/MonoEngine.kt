@@ -62,6 +62,11 @@ data class PermissionScope(
     val reason: String,
 )
 
+data class ConversationTurn(
+    val speaker: String,
+    val message: String,
+)
+
 data class InstructionRule(
     val layer: String,
     val directive: String,
@@ -78,6 +83,7 @@ data class MonoRun(
     val command: String,
     val inputMode: String,
     val intent: String,
+    val conversation: List<ConversationTurn>,
     val compressedIntent: String,
     val instructionPacket: List<InstructionRule>,
     val memoryContext: List<String>,
@@ -125,12 +131,14 @@ fun runMonoPipeline(command: String, inputMode: String = "Text", approved: Boole
     val escalation = cloudEscalationFor(intent, risk)
     val instructions = buildInstructionPacket(cleanCommand, inputMode, intent, compression, risk, approved, agents)
     val coverage = buildObjectiveCoverage(risk, workflow, agents, instructions, escalation)
+    val conversation = buildConversation(cleanCommand, inputMode, intent, risk, approved)
     val audit = buildAudit(cleanCommand, inputMode, intent, compression, risk, agents, workflow, escalation, instructions)
 
     return MonoRun(
         command = cleanCommand,
         inputMode = inputMode,
         intent = intent,
+        conversation = conversation,
         compressedIntent = compression,
         instructionPacket = instructions,
         memoryContext = memory,
@@ -319,6 +327,28 @@ private fun buildInstructionPacket(
     )
 }
 
+private fun buildConversation(
+    command: String,
+    inputMode: String,
+    intent: String,
+    risk: RiskLevel,
+    approved: Boolean,
+): List<ConversationTurn> {
+    val inputLabel = if (inputMode == "Mock voice") "Mock speech-to-text" else inputMode
+    val gateMessage = when {
+        risk == RiskLevel.L4 -> "I cannot run that in the demo because it is a critical action."
+        risk == RiskLevel.L3 && !approved -> "I found a financial action. I prepared the workflow, but I need authentication before mock execution."
+        risk == RiskLevel.L2 && !approved -> "I drafted the sensitive output and parked it in the approval dashboard for you."
+        risk == RiskLevel.L2 || risk == RiskLevel.L3 -> "Approval is recorded. I will execute only the mocked workflow and keep the audit trace visible."
+        else -> "I can run this safely with mock context and show every step."
+    }
+    return listOf(
+        ConversationTurn("You", command),
+        ConversationTurn("Mono", "$inputLabel captured. I classified this as $intent."),
+        ConversationTurn("Mono", gateMessage),
+    )
+}
+
 private fun buildWorkflow(intent: String, risk: RiskLevel, approved: Boolean): List<WorkflowStep> {
     val gateStatus = when {
         risk == RiskLevel.L4 -> TaskStatus.Blocked
@@ -354,6 +384,7 @@ private fun buildObjectiveCoverage(
     ObjectiveCoverage("App launches locally", true, "Verified on Android 35 AOSP ATD emulator and physical-device-ready APK"),
     ObjectiveCoverage("User can run demo presets", true, "Five preset commands are wired into the launcher"),
     ObjectiveCoverage("User can enter custom command", true, "Chat command field feeds the same pipeline"),
+    ObjectiveCoverage("Human-centric input layer shown", true, "Conversation bubbles, chat command, and mock speech-to-text preview are visible"),
     ObjectiveCoverage("Intent classification works", true, "Intent classifier produces named intents per command"),
     ObjectiveCoverage("Compression output shown", true, "Semantic compressor emits compact task atoms"),
     ObjectiveCoverage("Memory indexing output shown", true, "Memory vault and graph-relational rows are displayed"),

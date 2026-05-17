@@ -87,13 +87,15 @@ private fun MonoDashboard() {
     var command by remember { mutableStateOf(demoPresets.first().command) }
     var approved by remember { mutableStateOf(false) }
     var inputMode by remember { mutableStateOf("Text") }
+    var speechPreview by remember { mutableStateOf("Tap Mock voice to simulate speech-to-text input") }
     var voiceIndex by remember { mutableIntStateOf(0) }
     var run by remember { mutableStateOf(runMonoPipeline(command, inputMode, approved)) }
 
-    fun execute(mode: String = "Text", approve: Boolean = approved) {
+    fun execute(nextCommand: String = command, mode: String = "Text", approve: Boolean = approved) {
+        command = nextCommand
         inputMode = mode
         approved = approve
-        run = runMonoPipeline(command, mode, approve)
+        run = runMonoPipeline(nextCommand, mode, approve)
     }
 
     Box(
@@ -111,20 +113,23 @@ private fun MonoDashboard() {
             Header(run)
             LauncherCard(
                 command = command,
+                run = run,
+                speechPreview = speechPreview,
                 onCommandChange = {
                     command = it
                     approved = false
+                    speechPreview = "Typed command ready"
                 },
-                onRun = { execute("Text", false) },
+                onRun = { execute(command, "Text", false) },
                 onVoice = {
                     val preset = demoPresets[voiceIndex % demoPresets.size]
                     voiceIndex += 1
-                    command = preset.command
-                    execute("Mock voice", false)
+                    speechPreview = "Mock speech-to-text: \"${preset.command}\""
+                    execute(preset.command, "Mock voice", false)
                 },
                 onPreset = {
-                    command = it
-                    execute("Preset", false)
+                    speechPreview = "Preset loaded"
+                    execute(it, "Preset", false)
                 },
             )
             PipelineCard(run)
@@ -135,8 +140,8 @@ private fun MonoDashboard() {
             MemoryVaultCard(run)
             ApprovalCard(
                 run = run,
-                onApprove = { execute("Approval dashboard", true) },
-                onResetGate = { execute("Text", false) },
+                onApprove = { execute(command, "Approval dashboard", true) },
+                onResetGate = { execute(command, "Text", false) },
             )
             ObjectiveCoverageCard(run)
             AuditLogCard(run)
@@ -171,12 +176,21 @@ private fun Header(run: MonoRun) {
 @Composable
 private fun LauncherCard(
     command: String,
+    run: MonoRun,
+    speechPreview: String,
     onCommandChange: (String) -> Unit,
     onRun: () -> Unit,
     onVoice: () -> Unit,
     onPreset: (String) -> Unit,
 ) {
-    DashboardCard(title = "AI launcher interface") {
+    DashboardCard(title = "Human input layer") {
+        Text("Talk to Mono OS Lite through chat or simulated speech-to-text.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+        Spacer(Modifier.height(10.dp))
+        run.conversation.forEach { turn ->
+            ConversationBubble(turn)
+            Spacer(Modifier.height(7.dp))
+        }
+        Spacer(Modifier.height(4.dp))
         OutlinedTextField(
             value = command,
             onValueChange = onCommandChange,
@@ -184,6 +198,8 @@ private fun LauncherCard(
             minLines = 2,
             modifier = Modifier.fillMaxWidth(),
         )
+        Spacer(Modifier.height(10.dp))
+        VoiceCaptureStrip(speechPreview = speechPreview, inputMode = run.inputMode)
         Spacer(Modifier.height(10.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
             Button(
@@ -206,6 +222,47 @@ private fun LauncherCard(
             demoPresets.forEach { preset ->
                 PresetChip(preset.title) { onPreset(preset.command) }
             }
+        }
+    }
+}
+
+@Composable
+private fun ConversationBubble(turn: ConversationTurn) {
+    val isUser = turn.speaker == "You"
+    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth(if (isUser) 0.86f else 0.92f)
+                .background(if (isUser) MaterialTheme.colorScheme.primary else Color(0xFF26323A), RoundedCornerShape(8.dp))
+                .padding(11.dp),
+        ) {
+            Text(turn.speaker, color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+            Text(turn.message, color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, lineHeight = 16.sp)
+        }
+    }
+}
+
+@Composable
+private fun VoiceCaptureStrip(speechPreview: String, inputMode: String) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color(0xFF202830), RoundedCornerShape(8.dp))
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(34.dp)
+                .background(if (inputMode == "Mock voice") MaterialTheme.colorScheme.secondary else Color(0xFF38434B), RoundedCornerShape(999.dp)),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text("STT", color = if (inputMode == "Mock voice") MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurface, fontSize = 10.sp, fontWeight = FontWeight.Bold)
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Speech-to-text simulation", color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+            Text(speechPreview, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 15.sp)
         }
     }
 }

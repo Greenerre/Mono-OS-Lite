@@ -49,4 +49,13 @@ class MonoEngineTest {
         assertTrue(run.objectiveCoverage.any { it.objective == "Instruction layer simulated" })
         assertTrue(run.objectiveCoverage.any { it.objective == "APK builds successfully" })
     }
+
+    @Test
+    fun humanInputLayerIncludesConversationAndMockSpeechToText() {
+        val run = runMonoPipeline("Research this market and create a short action plan", inputMode = "Mock voice")
+
+        assertTrue(run.conversation.any { it.speaker == "You" })
+        assertTrue(run.conversation.any { it.message.contains("Mock speech-to-text") })
+        assertTrue(run.objectiveCoverage.any { it.objective == "Human-centric input layer shown" })
+    }
 }

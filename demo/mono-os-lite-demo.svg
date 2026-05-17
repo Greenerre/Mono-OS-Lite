@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <title>Mono OS Lite animated demo</title>
+  <desc>Animated storyboard showing chat input, mock voice input, instruction layer, risk gate, approvals, memory, agents, and audit.</desc>
+  <style>
+    text { font-family: Inter, Segoe UI, Arial, sans-serif; letter-spacing: 0; }
+    .bg { fill: #101316; }
+    .panel { fill: #181d22; stroke: #2d363e; stroke-width: 1.5; rx: 8; }
+    .soft { fill: #232a31; rx: 8; }
+    .primary { fill: #3de0b5; }
+    .warn { fill: #ffb454; }
+    .danger { fill: #ff7a59; }
+    .text { fill: #eaf2f1; font-size: 22px; font-weight: 700; }
+    .body { fill: #b8c6c3; font-size: 16px; }
+    .small { fill: #b8c6c3; font-size: 13px; }
+    .label { fill: #101316; font-size: 15px; font-weight: 800; }
+    .accent { fill: #3de0b5; font-size: 16px; font-weight: 800; }
+    .bubbleUser { fill: #3de0b5; rx: 8; }
+    .bubbleMono { fill: #26323a; rx: 8; }
+    .scene { opacity: 0; }
+    #s1 { animation: scene1 24s infinite; }
+    #s2 { animation: scene2 24s infinite; }
+    #s3 { animation: scene3 24s infinite; }
+    #s4 { animation: scene4 24s infinite; }
+    #s5 { animation: scene5 24s infinite; }
+    #s6 { animation: scene6 24s infinite; }
+    @keyframes scene1 { 0%, 14% { opacity: 1; } 17%, 100% { opacity: 0; } }
+    @keyframes scene2 { 0%, 16% { opacity: 0; } 18%, 30% { opacity: 1; } 33%, 100% { opacity: 0; } }
+    @keyframes scene3 { 0%, 32% { opacity: 0; } 35%, 47% { opacity: 1; } 50%, 100% { opacity: 0; } }
+    @keyframes scene4 { 0%, 49% { opacity: 0; } 52%, 64% { opacity: 1; } 67%, 100% { opacity: 0; } }
+    @keyframes scene5 { 0%, 66% { opacity: 0; } 69%, 81% { opacity: 1; } 84%, 100% { opacity: 0; } }
+    @keyframes scene6 { 0%, 83% { opacity: 0; } 86%, 100% { opacity: 1; } }
+    #pulse { animation: pulse 1.2s infinite; transform-origin: 985px 292px; }
+    @keyframes pulse { 0%, 100% { transform: scale(1); opacity: .95; } 50% { transform: scale(1.2); opacity: .45; } }
+  </style>
+
+  <rect class="bg" x="0" y="0" width="1280" height="720"/>
+  <text class="text" x="56" y="64">Mono OS Lite</text>
+  <text class="body" x="56" y="92">Privacy-first AI operating layer for Android</text>
+  <rect class="panel" x="46" y="124" width="1188" height="548"/>
+
+  <g id="s1" class="scene">
+    <text class="text" x="86" y="174">1. Human input layer</text>
+    <rect class="bubbleUser" x="760" y="214" width="390" height="82"/>
+    <text class="label" x="786" y="248">You</text>
+    <text class="label" x="786" y="274">Build a product roadmap for my startup idea</text>
+    <rect class="bubbleMono" x="104" y="320" width="560" height="96"/>
+    <text class="accent" x="132" y="354">Mono</text>
+    <text class="body" x="132" y="383">Classified as Product strategy planning.</text>
+    <rect class="soft" x="104" y="456" width="1046" height="74"/>
+    <circle id="pulse" class="warn" cx="985" cy="492" r="18"/>
+    <text class="accent" x="132" y="488">Mock speech-to-text</text>
+    <text class="body" x="132" y="515">Voice button cycles through demo presets without recording real audio.</text>
+  </g>
+
+  <g id="s2" class="scene">
+    <text class="text" x="86" y="174">2. Instruction packet</text>
+    <rect class="soft" x="104" y="218" width="1046" height="72"/>
+    <text class="accent" x="132" y="250">Capture</text>
+    <text class="body" x="260" y="250">Normalize input and preserve original user command</text>
+    <rect class="soft" x="104" y="312" width="1046" height="72"/>
+    <text class="accent" x="132" y="344">Privacy</text>
+    <text class="body" x="260" y="344">Use mock context only; no real calendar, email, banking, screen, or microphone data</text>
+    <rect class="soft" x="104" y="406" width="1046" height="72"/>
+    <text class="accent" x="132" y="438">Risk</text>
+    <text class="body" x="260" y="438">Evaluate L0-L4 before any agent execution</text>
+    <rect class="soft" x="104" y="500" width="1046" height="72"/>
+    <text class="accent" x="132" y="532">Audit</text>
+    <text class="body" x="260" y="532">Record every decision in a visible local trace</text>
+  </g>
+
+  <g id="s3" class="scene">
+    <text class="text" x="86" y="174">3. Multi-agent routing</text>
+    <rect class="soft" x="114" y="230" width="220" height="120"/>
+    <text class="accent" x="146" y="280">Strategy Agent</text>
+    <text class="small" x="146" y="310">Define pillars</text>
+    <rect class="soft" x="384" y="230" width="220" height="120"/>
+    <text class="accent" x="416" y="280">Research Agent</text>
+    <text class="small" x="416" y="310">Simulate evidence</text>
+    <rect class="soft" x="654" y="230" width="220" height="120"/>
+    <text class="accent" x="686" y="280">Product Agent</text>
+    <text class="small" x="686" y="310">Build milestones</text>
+    <rect class="soft" x="924" y="230" width="220" height="120"/>
+    <text class="accent" x="956" y="280">Builder Agent</text>
+    <text class="small" x="956" y="310">Create actions</text>
+    <rect class="panel" x="114" y="426" width="1030" height="94"/>
+    <text class="body" x="146" y="466">Semantic compressor: intent=Product strategy planning | atoms=Build+product+roadmap+startup | risk=L1</text>
+  </g>
+
+  <g id="s4" class="scene">
+    <text class="text" x="86" y="174">4. High-risk approval gate</text>
+    <rect class="bubbleUser" x="726" y="218" width="424" height="74"/>
+    <text class="label" x="756" y="262">Move $500 to my savings account</text>
+    <rect class="danger" x="104" y="232" width="112" height="60" rx="8"/>
+    <text class="label" x="142" y="270">L3</text>
+    <rect class="panel" x="104" y="340" width="1046" height="160"/>
+    <text class="text" x="138" y="390">Authentication required</text>
+    <text class="body" x="138" y="430">Financial movement detected. Mono OS Lite prepares only a mocked transfer shell.</text>
+    <rect class="warn" x="138" y="454" width="320" height="46" rx="8"/>
+    <text class="label" x="172" y="484">Authenticate demo gate</text>
+  </g>
+
+  <g id="s5" class="scene">
+    <text class="text" x="86" y="174">5. Memory and visual context</text>
+    <rect class="soft" x="104" y="224" width="492" height="270"/>
+    <text class="accent" x="136" y="268">Memory Vault</text>
+    <text class="body" x="136" y="310">Mock latest client email</text>
+    <text class="body" x="136" y="350">Tone preference: concise, warm</text>
+    <text class="body" x="136" y="390">Prior rule: outbound messages require review</text>
+    <rect class="soft" x="642" y="224" width="508" height="270"/>
+    <text class="accent" x="674" y="268">Visual Context Index</text>
+    <text class="body" x="674" y="310">launcher:chat</text>
+    <text class="body" x="674" y="350">app:mail-mock</text>
+    <text class="body" x="674" y="390">ui:draft-review</text>
+  </g>
+
+  <g id="s6" class="scene">
+    <text class="text" x="86" y="174">6. Goal coverage and audit</text>
+    <rect class="soft" x="104" y="218" width="1046" height="76"/>
+    <text class="primary" x="132" y="265">16 / 16 core objectives achieved</text>
+    <rect class="soft" x="104" y="324" width="1046" height="76"/>
+    <text class="body" x="132" y="371">Audit: capture -> classify -> compress -> instruction layer -> memory -> risk -> agents -> mock app</text>
+    <rect class="soft" x="104" y="430" width="1046" height="76"/>
+    <text class="body" x="132" y="477">APK builds, app launches, presets run, custom input works, high-risk flows require approval/authentication.</text>
+  </g>
+</svg>

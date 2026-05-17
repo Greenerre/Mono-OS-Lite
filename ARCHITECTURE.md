@@ -34,8 +34,9 @@ The core pipeline lives in `app/src/main/java/com/monoos/lite/MonoEngine.kt`.
 `MainActivity.kt` renders a single scrollable AI control surface:
 
 - AI launcher interface
+- Human input layer with chat bubbles
 - Chat command box
-- Mock audio input button
+- Mock audio input button and speech-to-text preview
 - Context permissions dashboard
 - Instruction layer simulation
 - Workflow management dashboard
@@ -44,6 +45,10 @@ The core pipeline lives in `app/src/main/java/com/monoos/lite/MonoEngine.kt`.
 - Approval dashboard
 - Goal coverage dashboard
 - Audit log panel
+
+## Demo video artifact
+
+`demo/mono-os-lite-demo.svg` is a browser-playable animated storyboard that simulates the app flow for judging and sharing. It exists because the local ATD emulator was functionally interactive but returned black framebuffer screenshots in this environment.
 
 ## Data policy
 

@@ -91,3 +91,13 @@
 - Added unit tests for L3 instruction-layer enforcement and objective coverage.
 - Updated README, architecture, demo script, and changelog.
 - Verified `.\gradlew.bat testDebugUnitTest assembleDebug` succeeds.
+
+### Human-centric UX and demo video pass
+
+- Added conversation turns to the pipeline output.
+- Reworked the launcher into a human input layer with user/assistant chat bubbles.
+- Added a mock speech-to-text preview strip for the voice prototype path.
+- Added objective coverage for the human-centric input layer.
+- Added unit test coverage for conversation and mock speech-to-text output.
+- Added browser-playable animated SVG demo at `demo/mono-os-lite-demo.svg`.
+- Added `demo/VIDEO_DEMO.md` with usage and recording guidance.
