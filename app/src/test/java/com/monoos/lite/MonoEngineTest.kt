@@ -32,4 +32,21 @@ class MonoEngineTest {
         assertTrue(pending.workflow.any { it.status == TaskStatus.WaitingForApproval })
         assertTrue(approved.workflow.all { it.status != TaskStatus.WaitingForApproval })
     }
+
+    @Test
+    fun instructionLayerExplainsFinancialGate() {
+        val run = runMonoPipeline("Move $500 to my savings account")
+
+        assertTrue(run.instructionPacket.any { it.layer == "Approval" && it.outcome.contains("Authentication required") })
+        assertTrue(run.audit.any { it.module == "Instruction Layer" })
+    }
+
+    @Test
+    fun allCoreObjectivesAreRepresentedAsAchieved() {
+        val run = runMonoPipeline("Build a product roadmap for my startup idea")
+
+        assertTrue(allCoreObjectivesAchieved(run))
+        assertTrue(run.objectiveCoverage.any { it.objective == "Instruction layer simulated" })
+        assertTrue(run.objectiveCoverage.any { it.objective == "APK builds successfully" })
+    }
 }

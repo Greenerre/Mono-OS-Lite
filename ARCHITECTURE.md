@@ -18,15 +18,16 @@ The core pipeline lives in `app/src/main/java/com/monoos/lite/MonoEngine.kt`.
 
 1. `Intent Classifier` maps raw text to a demo intent.
 2. `Semantic Compressor` converts the command into compact task atoms.
-3. `Memory Indexer` retrieves mock context relevant to the intent.
-4. `Graph-Relational Memory Layer` emits node/relation/evidence rows.
-5. `Visual Context Index` attaches synthetic UI and app tags.
-6. `Risk Gate Engine` assigns L0-L4 risk.
-7. `Agent Router` assigns one or more agents.
-8. `Approval Manager` gates L2/L3 flows.
-9. `Cloud LLM Escalation Layer` describes simulated escalation.
-10. `Mock App Orchestrator` creates workflow statuses.
-11. `Audit Logger` records every step.
+3. `Instruction Layer` turns the compressed task into visible directives for privacy, memory, risk, approval, routing, and audit.
+4. `Memory Indexer` retrieves mock context relevant to the intent.
+5. `Graph-Relational Memory Layer` emits node/relation/evidence rows.
+6. `Visual Context Index` attaches synthetic UI and app tags.
+7. `Risk Gate Engine` assigns L0-L4 risk.
+8. `Agent Router` assigns one or more agents.
+9. `Approval Manager` gates L2/L3 flows.
+10. `Cloud LLM Escalation Layer` describes simulated escalation.
+11. `Mock App Orchestrator` creates workflow statuses.
+12. `Audit Logger` records every step.
 
 ## UI composition
 
@@ -36,10 +37,12 @@ The core pipeline lives in `app/src/main/java/com/monoos/lite/MonoEngine.kt`.
 - Chat command box
 - Mock audio input button
 - Context permissions dashboard
+- Instruction layer simulation
 - Workflow management dashboard
 - Visual agent task review dashboard
 - Memory vault dashboard
 - Approval dashboard
+- Goal coverage dashboard
 - Audit log panel
 
 ## Data policy

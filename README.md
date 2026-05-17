@@ -57,8 +57,10 @@ This repo is prepared for `Greenerre/Mono-OS-Lite`.
 1. Enter a command or press `Mock voice`.
 2. Select any preset, including the high-risk financial preset.
 3. Watch the pipeline classify intent, compress semantics, retrieve memory, attach graph and visual indexes, route agents, set risk, and write the audit log.
-4. For client email and payment flows, use the Approval dashboard.
-5. For `Move $500 to my savings account`, confirm that the initial state is `L3` and authentication is required before mocked execution can complete.
+4. Inspect the Instruction layer simulation to see the policy packet Mono OS Lite uses before agent execution.
+5. For client email and payment flows, use the Approval dashboard.
+6. For `Move $500 to my savings account`, confirm that the initial state is `L3` and authentication is required before mocked execution can complete.
+7. Inspect the Goal coverage dashboard to confirm all required demo objectives are represented.
 
 ## Exact commands to test
 

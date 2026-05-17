@@ -81,3 +81,13 @@
 - Expanded `.gitignore` to exclude generated emulator proofs, build outputs, local SDK paths, and IDE noise.
 - Removed local emulator screenshot/XML artifacts from the workspace.
 - Git could not be initialized or pushed from this machine because `git` and `gh` are not installed or available on `PATH`.
+
+### Instruction layer simulation pass
+
+- Added explicit instruction packet modeling to `MonoEngine.kt`.
+- Added `InstructionRule` and `ObjectiveCoverage` runtime data.
+- Added `Instruction layer simulation` dashboard to make OS policy directives visible.
+- Added `Goal coverage dashboard` to show whether core demo objectives are represented in the running app.
+- Added unit tests for L3 instruction-layer enforcement and objective coverage.
+- Updated README, architecture, demo script, and changelog.
+- Verified `.\gradlew.bat testDebugUnitTest assembleDebug` succeeds.

@@ -128,6 +128,7 @@ private fun MonoDashboard() {
                 },
             )
             PipelineCard(run)
+            InstructionLayerCard(run)
             ContextPermissionsCard()
             WorkflowCard(run)
             AgentReviewCard(run)
@@ -137,6 +138,7 @@ private fun MonoDashboard() {
                 onApprove = { execute("Approval dashboard", true) },
                 onResetGate = { execute("Text", false) },
             )
+            ObjectiveCoverageCard(run)
             AuditLogCard(run)
             Spacer(Modifier.height(8.dp))
         }
@@ -217,6 +219,30 @@ private fun PipelineCard(run: MonoRun) {
         KeyValue("Intent classifier", run.intent)
         KeyValue("Semantic compressor", run.compressedIntent)
         KeyValue("Cloud escalation", run.cloudEscalation)
+    }
+}
+
+@Composable
+private fun InstructionLayerCard(run: MonoRun) {
+    DashboardCard(title = "Instruction layer simulation") {
+        KeyValue("Instruction packet", "Command -> policy -> memory -> risk -> agents -> mock app actions")
+        run.instructionPacket.forEach { rule ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                Box(
+                    modifier = Modifier
+                        .width(92.dp)
+                        .background(Color(0xFF26323A), RoundedCornerShape(7.dp))
+                        .padding(horizontal = 8.dp, vertical = 6.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(rule.layer, color = MaterialTheme.colorScheme.primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(rule.directive, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, lineHeight = 16.sp)
+                    Text(rule.outcome, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 15.sp)
+                }
+            }
+        }
     }
 }
 
@@ -360,6 +386,30 @@ private fun ApprovalCard(run: MonoRun, onApprove: () -> Unit, onResetGate: () ->
             }
             else -> {
                 AlertStrip("No approval needed", "Risk gate allowed mocked execution with audit logging.")
+            }
+        }
+    }
+}
+
+@Composable
+private fun ObjectiveCoverageCard(run: MonoRun) {
+    DashboardCard(title = "Goal coverage dashboard") {
+        val achieved = run.objectiveCoverage.count { it.achieved }
+        KeyValue("Core objectives", "$achieved / ${run.objectiveCoverage.size} achieved")
+        run.objectiveCoverage.forEach { objective ->
+            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(if (objective.achieved) MaterialTheme.colorScheme.primary else Color(0xFFFF4D6D), RoundedCornerShape(5.dp)),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(if (objective.achieved) "Y" else "N", color = Color(0xFF101316), fontSize = 10.sp, fontWeight = FontWeight.Bold)
+                }
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(objective.objective, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(objective.evidence, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 15.sp)
+                }
             }
         }
     }

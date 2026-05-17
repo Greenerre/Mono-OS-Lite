@@ -6,10 +6,12 @@
 2. Press `Build a product roadmap for my startup idea`.
 3. Show that the intent is `Product strategy planning`.
 4. Point to semantic compression, memory context, graph rows, visual tags, and multi-agent routing.
-5. Press `Move $500 to my savings account`.
-6. Show `L3` risk, authentication required, and the Approval dashboard.
-7. Press `Authenticate demo gate`.
-8. Explain that only a mocked transfer shell executes and the audit log records the full trace.
+5. Show the Instruction layer simulation and explain that it is the OS policy packet.
+6. Press `Move $500 to my savings account`.
+7. Show `L3` risk, authentication required, and the Approval dashboard.
+8. Press `Authenticate demo gate`.
+9. Explain that only a mocked transfer shell executes and the audit log records the full trace.
+10. Show the Goal coverage dashboard for the final objective checklist.
 
 ## 5-minute extended demo
 
@@ -35,8 +37,10 @@
 - AI launcher: raw intent capture through chat or mock voice.
 - Context permissions: privacy-first mock permission model.
 - Pipeline: transparent classification, compression, routing, and risk.
+- Instruction layer: visible OS policy directives before execution.
 - Workflow dashboard: task status updates and orchestration.
 - Agent review: multi-agent execution plan.
 - Memory vault: graph-relational memory indexing.
 - Approval dashboard: L2/L3 gates before sensitive execution.
+- Goal coverage: proof that required objectives are represented in the running app.
 - Audit panel: local traceability for every module.

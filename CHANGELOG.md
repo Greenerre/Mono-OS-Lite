@@ -7,6 +7,8 @@
 - Built a Compose AI launcher and dashboard suite.
 - Added deterministic intent classification, compression, memory indexing, graph rows, visual tags, risk gates, approvals, agent routing, simulated cloud escalation, workflow statuses, and audit logs.
 - Added unit tests for high-risk financial gating, multi-agent roadmap routing, and sensitive email approval.
+- Added explicit instruction layer simulation and goal coverage dashboard.
+- Added unit tests proving instruction-layer L3 enforcement and objective coverage.
 - Built debug APK successfully.
 
 ## Verification
