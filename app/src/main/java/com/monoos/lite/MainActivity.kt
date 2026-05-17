@@ -3,7 +3,6 @@ package com.monoos.lite
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -36,17 +35,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -60,168 +55,260 @@ class MainActivity : ComponentActivity() {
 }
 
 private val MonoScheme: ColorScheme = darkColorScheme(
-    primary = Color(0xFF3DE0B5),
-    secondary = Color(0xFFFFB454),
+    primary = Color(0xFF2ED3B7),
+    secondary = Color(0xFFFFC857),
     tertiary = Color(0xFFFF6B6B),
-    background = Color(0xFF101316),
-    surface = Color(0xFF181D22),
-    surfaceVariant = Color(0xFF232A31),
-    onPrimary = Color(0xFF06231D),
-    onSecondary = Color(0xFF2D1800),
-    onBackground = Color(0xFFEAF2F1),
-    onSurface = Color(0xFFEAF2F1),
-    onSurfaceVariant = Color(0xFFB8C6C3),
+    background = Color(0xFF0E1113),
+    surface = Color(0xFF171C20),
+    surfaceVariant = Color(0xFF242C32),
+    onPrimary = Color(0xFF05231E),
+    onSecondary = Color(0xFF2C2100),
+    onBackground = Color(0xFFEAF2EF),
+    onSurface = Color(0xFFEAF2EF),
+    onSurfaceVariant = Color(0xFFB6C4C0),
 )
 
 @Composable
 fun MonoOsLiteApp() {
     MaterialTheme(colorScheme = MonoScheme) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            MonoDashboard()
+            MonoChatWorkspace()
         }
     }
 }
 
 @Composable
-private fun MonoDashboard() {
+private fun MonoChatWorkspace() {
     var command by remember { mutableStateOf(demoPresets.first().command) }
     var approved by remember { mutableStateOf(false) }
-    var inputMode by remember { mutableStateOf("Text") }
-    var speechPreview by remember { mutableStateOf("Tap Mock voice to simulate speech-to-text input") }
-    var voiceIndex by remember { mutableIntStateOf(0) }
-    var run by remember { mutableStateOf(runMonoPipeline(command, inputMode, approved)) }
+    var run by remember { mutableStateOf(runMonoPipeline(command, approved = approved)) }
 
-    fun execute(nextCommand: String = command, mode: String = "Text", approve: Boolean = approved) {
+    fun execute(nextCommand: String = command, approve: Boolean = false) {
         command = nextCommand
-        inputMode = mode
         approved = approve
-        run = runMonoPipeline(nextCommand, mode, approve)
+        run = runMonoPipeline(nextCommand, approved = approve)
     }
 
     Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Brush.verticalGradient(listOf(Color(0xFF101316), Color(0xFF14201F), Color(0xFF101316)))),
+            .background(Brush.verticalGradient(listOf(Color(0xFF0E1113), Color(0xFF121A1B), Color(0xFF0E1113)))),
     ) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(16.dp),
+                .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            Header(run)
-            LauncherCard(
+            TopBar(run)
+            ConversationSidebar(run) { execute(it, false) }
+            ChatSurface(
                 command = command,
                 run = run,
-                speechPreview = speechPreview,
                 onCommandChange = {
                     command = it
                     approved = false
-                    speechPreview = "Typed command ready"
                 },
-                onRun = { execute(command, "Text", false) },
-                onVoice = {
-                    val preset = demoPresets[voiceIndex % demoPresets.size]
-                    voiceIndex += 1
-                    speechPreview = "Mock speech-to-text: \"${preset.command}\""
-                    execute(preset.command, "Mock voice", false)
-                },
-                onPreset = {
-                    speechPreview = "Preset loaded"
-                    execute(it, "Preset", false)
-                },
+                onSend = { execute(command, false) },
             )
-            PipelineCard(run)
-            InstructionLayerCard(run)
-            ContextPermissionsCard()
-            WorkflowCard(run)
-            AgentReviewCard(run)
-            MemoryVaultCard(run)
-            ApprovalCard(
+            ThinkingSurface(run)
+            SemanticMemorySurface(run)
+            ExecutionSurface(run)
+            ApprovalSurface(
                 run = run,
-                onApprove = { execute(command, "Approval dashboard", true) },
-                onResetGate = { execute(command, "Text", false) },
+                onApprove = { execute(command, true) },
+                onReset = { execute(command, false) },
             )
-            ObjectiveCoverageCard(run)
-            AuditLogCard(run)
-            Spacer(Modifier.height(8.dp))
+            AuditSurface(run)
+            Spacer(Modifier.height(6.dp))
         }
     }
 }
 
 @Composable
-private fun Header(run: MonoRun) {
-    Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.Top) {
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Mono OS Lite", color = MaterialTheme.colorScheme.onBackground, fontSize = 31.sp, fontWeight = FontWeight.Bold)
-                Text(
-                    "Privacy-first AI operating layer for Android",
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    fontSize = 14.sp,
-                )
-            }
-            RiskBadge(run.riskLevel)
+private fun TopBar(run: MonoRun) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text("Mono OS Lite", color = MaterialTheme.colorScheme.onBackground, fontSize = 29.sp, fontWeight = FontWeight.Bold)
+            Text("Chat-first Android instruction layer", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
         }
-        Text(
-            "Intent classification, semantic compression, graph memory, visual context, agent routing, approval gates, and audit logs in one demo loop.",
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            fontSize = 13.sp,
-            lineHeight = 18.sp,
+        RiskBadge(run.riskLevel)
+    }
+}
+
+@Composable
+private fun ConversationSidebar(run: MonoRun, onProject: (String) -> Unit) {
+    Panel(title = "Projects") {
+        val projects = listOf(
+            "Personal OS" to demoPresets[0].command,
+            "Client Comms" to demoPresets[1].command,
+            "Market Research" to demoPresets[2].command,
+            "Finance Gate" to demoPresets[3].command,
+            "Startup Roadmap" to demoPresets[4].command,
         )
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            projects.forEach { (label, prompt) ->
+                ProjectChip(label = label, selected = run.command == prompt) { onProject(prompt) }
+            }
+        }
     }
 }
 
 @Composable
-private fun LauncherCard(
+private fun ChatSurface(
     command: String,
     run: MonoRun,
-    speechPreview: String,
     onCommandChange: (String) -> Unit,
-    onRun: () -> Unit,
-    onVoice: () -> Unit,
-    onPreset: (String) -> Unit,
+    onSend: () -> Unit,
 ) {
-    DashboardCard(title = "Human input layer") {
-        Text("Talk to Mono OS Lite through chat or simulated speech-to-text.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-        Spacer(Modifier.height(10.dp))
+    Panel(title = "Chat") {
         run.conversation.forEach { turn ->
             ConversationBubble(turn)
-            Spacer(Modifier.height(7.dp))
+            Spacer(Modifier.height(8.dp))
         }
-        Spacer(Modifier.height(4.dp))
         OutlinedTextField(
             value = command,
             onValueChange = onCommandChange,
-            label = { Text("Chat command") },
+            label = { Text("Tell Mono OS what to do") },
             minLines = 2,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(10.dp))
-        VoiceCaptureStrip(speechPreview = speechPreview, inputMode = run.inputMode)
-        Spacer(Modifier.height(10.dp))
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-            Button(
-                onClick = onRun,
-                modifier = Modifier.weight(1f).height(46.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+        Button(
+            onClick = onSend,
+            modifier = Modifier.fillMaxWidth().height(48.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+        ) {
+            Text("Send instruction", color = MaterialTheme.colorScheme.onPrimary, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+@Composable
+private fun ThinkingSurface(run: MonoRun) {
+    Panel(title = "Thinking Notes") {
+        run.thinkingNotes.forEachIndexed { index, note ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                Text("Run pipeline", color = MaterialTheme.colorScheme.onPrimary, maxLines = 1)
-            }
-            Button(
-                onClick = onVoice,
-                modifier = Modifier.width(112.dp).height(46.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2B3942)),
-            ) {
-                Text("Mock voice", maxLines = 1)
+                StepPill(index + 1, riskColor(run.riskLevel))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(note.stage, color = MaterialTheme.colorScheme.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(note.note, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun SemanticMemorySurface(run: MonoRun) {
+    Panel(title = "Semantic Memory") {
+        KeyValue("Compressed intent", run.compressedIntent)
+        KeyValue("Local memory record", run.memoryRecordId)
+        Text("Context retrieved", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        run.memoryContext.forEach {
+            Text("- $it", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 17.sp)
+        }
         Spacer(Modifier.height(10.dp))
+        Text("Graph-relational index", color = MaterialTheme.colorScheme.primary, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        run.graphMemory.take(4).forEach { GraphRow(it) }
+        Spacer(Modifier.height(8.dp))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            demoPresets.forEach { preset ->
-                PresetChip(preset.title) { onPreset(preset.command) }
+            run.visualTags.forEach { TagChip(it) }
+        }
+    }
+}
+
+@Composable
+private fun ExecutionSurface(run: MonoRun) {
+    Panel(title = "Execution") {
+        KeyValue("Local model", "Simulated Ollama Gemma local response")
+        Text(run.localLlmResponse, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, lineHeight = 18.sp)
+        Spacer(Modifier.height(10.dp))
+        KeyValue("Cloud escalation", run.cloudLlmTrace)
+        Spacer(Modifier.height(4.dp))
+        run.agents.forEach { assignment ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                AgentInitials(assignment.agent)
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(assignment.agent.label, color = MaterialTheme.colorScheme.onSurface, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+                    Text(assignment.role, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
+                }
+                StatusText(assignment.status)
             }
+        }
+    }
+}
+
+@Composable
+private fun ApprovalSurface(run: MonoRun, onApprove: () -> Unit, onReset: () -> Unit) {
+    if (!run.approvalRequired && run.riskLevel != RiskLevel.L4) {
+        return
+    }
+    Panel(title = "Approval Gate") {
+        KeyValue("Risk decision", "${run.riskLevel.label}: ${run.riskReason}")
+        when {
+            run.riskLevel == RiskLevel.L4 -> AlertStrip("Blocked", "Critical actions are blocked in this prototype.")
+            !run.approved -> {
+                AlertStrip("Waiting", run.riskLevel.action)
+                Spacer(Modifier.height(10.dp))
+                Button(
+                    onClick = onApprove,
+                    modifier = Modifier.fillMaxWidth().height(46.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
+                ) {
+                    Text(if (run.riskLevel == RiskLevel.L3) "Authenticate demo gate" else "Approve draft", color = MaterialTheme.colorScheme.onSecondary)
+                }
+            }
+            else -> {
+                AlertStrip("Approved", "Approval/authentication was recorded for the mock workflow.")
+                TextButton(onClick = onReset) { Text("Reset gate") }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AuditSurface(run: MonoRun) {
+    Panel(title = "Audit Trail") {
+        run.audit.takeLast(7).forEach { event ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(9.dp),
+            ) {
+                Text(event.time, color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp, modifier = Modifier.width(58.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(event.module, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
+                    Text(event.detail, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Panel(title: String, content: @Composable ColumnScope.() -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(8.dp),
+        colors = CardDefaults.cardColors(containerColor = Color(0xF2171C20)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+    ) {
+        Column(modifier = Modifier.padding(14.dp)) {
+            Text(title, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(10.dp))
+            content()
         }
     }
 }
@@ -232,274 +319,33 @@ private fun ConversationBubble(turn: ConversationTurn) {
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start) {
         Column(
             modifier = Modifier
-                .fillMaxWidth(if (isUser) 0.86f else 0.92f)
-                .background(if (isUser) MaterialTheme.colorScheme.primary else Color(0xFF26323A), RoundedCornerShape(8.dp))
+                .fillMaxWidth(if (isUser) 0.86f else 0.94f)
+                .background(if (isUser) MaterialTheme.colorScheme.primary else Color(0xFF263039), RoundedCornerShape(8.dp))
                 .padding(11.dp),
         ) {
             Text(turn.speaker, color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-            Text(turn.message, color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, lineHeight = 16.sp)
+            Text(turn.message, color = if (isUser) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, lineHeight = 17.sp)
         }
     }
 }
 
 @Composable
-private fun VoiceCaptureStrip(speechPreview: String, inputMode: String) {
-    Row(
+private fun ProjectChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF202830), RoundedCornerShape(8.dp))
-            .padding(10.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+            .background(if (selected) MaterialTheme.colorScheme.primary else Color(0xFF222A30), RoundedCornerShape(8.dp))
+            .border(1.dp, if (selected) MaterialTheme.colorScheme.primary else Color(0xFF344149), RoundedCornerShape(8.dp))
+            .clickable(onClick = onClick)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
     ) {
-        Box(
-            modifier = Modifier
-                .size(34.dp)
-                .background(if (inputMode == "Mock voice") MaterialTheme.colorScheme.secondary else Color(0xFF38434B), RoundedCornerShape(999.dp)),
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("STT", color = if (inputMode == "Mock voice") MaterialTheme.colorScheme.onSecondary else MaterialTheme.colorScheme.onSurface, fontSize = 10.sp, fontWeight = FontWeight.Bold)
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Text("Speech-to-text simulation", color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-            Text(speechPreview, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 15.sp)
-        }
-    }
-}
-
-@Composable
-private fun PipelineCard(run: MonoRun) {
-    DashboardCard(title = "Structured execution pipeline") {
-        PipelineDiagram(run)
-        Spacer(Modifier.height(12.dp))
-        KeyValue("Input mode", run.inputMode)
-        KeyValue("Intent classifier", run.intent)
-        KeyValue("Semantic compressor", run.compressedIntent)
-        KeyValue("Cloud escalation", run.cloudEscalation)
-    }
-}
-
-@Composable
-private fun InstructionLayerCard(run: MonoRun) {
-    DashboardCard(title = "Instruction layer simulation") {
-        KeyValue("Instruction packet", "Command -> policy -> memory -> risk -> agents -> mock app actions")
-        run.instructionPacket.forEach { rule ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                Box(
-                    modifier = Modifier
-                        .width(92.dp)
-                        .background(Color(0xFF26323A), RoundedCornerShape(7.dp))
-                        .padding(horizontal = 8.dp, vertical = 6.dp),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(rule.layer, color = MaterialTheme.colorScheme.primary, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(rule.directive, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, lineHeight = 16.sp)
-                    Text(rule.outcome, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 15.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun PipelineDiagram(run: MonoRun) {
-    val colors = listOf(
-        Color(0xFF3DE0B5),
-        Color(0xFF58A6FF),
-        Color(0xFFFFB454),
-        riskColor(run.riskLevel),
-        Color(0xFFEAF2F1),
-    )
-    Canvas(modifier = Modifier.fillMaxWidth().height(58.dp)) {
-        val count = colors.size
-        val step = size.width / count
-        colors.forEachIndexed { index, color ->
-            val x = step * index + step / 2f
-            drawCircle(color, radius = 12.dp.toPx(), center = Offset(x, size.height / 2f))
-            if (index < count - 1) {
-                drawLine(
-                    color = Color(0x556E7B85),
-                    start = Offset(x + 17.dp.toPx(), size.height / 2f),
-                    end = Offset(x + step - 17.dp.toPx(), size.height / 2f),
-                    strokeWidth = 4.dp.toPx(),
-                    cap = StrokeCap.Round,
-                )
-            }
-        }
-    }
-    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-        listOf("Intent", "Memory", "Visual", "Risk", "Agents").forEach {
-            Text(it, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
-        }
-    }
-}
-
-@Composable
-private fun ContextPermissionsCard() {
-    DashboardCard(title = "Context permissions dashboard") {
-        permissionScopes.forEach { scope ->
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Box(
-                    modifier = Modifier
-                        .size(14.dp)
-                        .background(if (scope.enabled) MaterialTheme.colorScheme.primary else Color(0xFFFF6B6B), RoundedCornerShape(3.dp)),
-                )
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(scope.name, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                    Text(scope.reason, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                }
-                Text(if (scope.enabled) "Mock on" else "Denied", color = if (scope.enabled) MaterialTheme.colorScheme.primary else Color(0xFFFF9B9B), fontSize = 12.sp)
-            }
-        }
-    }
-}
-
-@Composable
-private fun WorkflowCard(run: MonoRun) {
-    DashboardCard(title = "Workflow management dashboard") {
-        run.workflow.forEachIndexed { index, step ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                StepNumber(index + 1, step.status)
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(step.title, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        StatusText(step.status)
-                    }
-                    Text(step.detail, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AgentReviewCard(run: MonoRun) {
-    DashboardCard(title = "Visual agent task review dashboard") {
-        run.agents.forEach { assignment ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 7.dp), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                AgentIcon(assignment.agent)
-                Column(modifier = Modifier.weight(1f)) {
-                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(assignment.agent.label, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 14.sp)
-                        StatusText(assignment.status)
-                    }
-                    Text(assignment.role, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp)
-                }
-            }
-        }
-        Spacer(Modifier.height(8.dp))
-        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            run.visualTags.forEach { TagChip(it) }
-        }
-    }
-}
-
-@Composable
-private fun MemoryVaultCard(run: MonoRun) {
-    DashboardCard(title = "Memory vault dashboard") {
-        Text("Retrieved context", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-        run.memoryContext.forEach { memory ->
-            Text("- $memory", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 17.sp)
-        }
-        Spacer(Modifier.height(10.dp))
-        Text("Graph-relational memory index", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
-        run.graphMemory.forEach { entry ->
-            GraphRow(entry)
-        }
-    }
-}
-
-@Composable
-private fun ApprovalCard(run: MonoRun, onApprove: () -> Unit, onResetGate: () -> Unit) {
-    DashboardCard(title = "Approval dashboard") {
-        KeyValue("Risk level", run.riskLevel.label)
-        KeyValue("Gate decision", run.riskReason)
-        Spacer(Modifier.height(8.dp))
-        when {
-            run.riskLevel == RiskLevel.L4 -> {
-                AlertStrip("Blocked", "Critical tasks are blocked in this demo. No mock execution is allowed.")
-            }
-            run.approvalRequired && !run.approved -> {
-                AlertStrip("Action required", run.riskLevel.action)
-                Spacer(Modifier.height(10.dp))
-                Button(
-                    onClick = onApprove,
-                    modifier = Modifier.fillMaxWidth().height(46.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
-                ) {
-                    Text(if (run.riskLevel == RiskLevel.L3) "Authenticate demo gate" else "Approve draft", color = MaterialTheme.colorScheme.onSecondary)
-                }
-            }
-            run.approvalRequired && run.approved -> {
-                AlertStrip("Approved", "User approval/authentication was recorded. Only mocked orchestration was executed.")
-                Spacer(Modifier.height(8.dp))
-                TextButton(onClick = onResetGate) { Text("Reset approval gate") }
-            }
-            else -> {
-                AlertStrip("No approval needed", "Risk gate allowed mocked execution with audit logging.")
-            }
-        }
-    }
-}
-
-@Composable
-private fun ObjectiveCoverageCard(run: MonoRun) {
-    DashboardCard(title = "Goal coverage dashboard") {
-        val achieved = run.objectiveCoverage.count { it.achieved }
-        KeyValue("Core objectives", "$achieved / ${run.objectiveCoverage.size} achieved")
-        run.objectiveCoverage.forEach { objective ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .background(if (objective.achieved) MaterialTheme.colorScheme.primary else Color(0xFFFF4D6D), RoundedCornerShape(5.dp)),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(if (objective.achieved) "Y" else "N", color = Color(0xFF101316), fontSize = 10.sp, fontWeight = FontWeight.Bold)
-                }
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(objective.objective, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-                    Text(objective.evidence, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp, lineHeight = 15.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun AuditLogCard(run: MonoRun) {
-    DashboardCard(title = "Audit log panel") {
-        run.audit.forEach { event ->
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                Text(event.time, color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp, modifier = Modifier.width(58.dp))
-                Column(modifier = Modifier.weight(1f)) {
-                    Text(event.module, color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.Bold, fontSize = 12.sp)
-                    Text(event.detail, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun DashboardCard(title: String, content: @Composable ColumnScope.() -> Unit) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(8.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xF2181D22)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-    ) {
-        Column(modifier = Modifier.padding(14.dp)) {
-            Text(title, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp, fontWeight = FontWeight.Bold)
-            Spacer(Modifier.height(10.dp))
-            content()
-        }
+        Text(
+            label,
+            color = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+            fontSize = 12.sp,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 
@@ -512,48 +358,41 @@ private fun KeyValue(label: String, value: String) {
 }
 
 @Composable
-private fun RiskBadge(risk: RiskLevel) {
+private fun StepPill(number: Int, color: Color) {
     Box(
-        modifier = Modifier
-            .background(riskColor(risk), RoundedCornerShape(8.dp))
-            .padding(horizontal = 9.dp, vertical = 7.dp),
+        modifier = Modifier.size(28.dp).background(color, RoundedCornerShape(8.dp)),
+        contentAlignment = Alignment.Center,
     ) {
-        Text(risk.name, color = Color(0xFF101316), fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Text(number.toString(), color = Color(0xFF0E1113), fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
-private fun PresetChip(label: String, onClick: () -> Unit) {
+private fun RiskBadge(risk: RiskLevel) {
     Box(
-        modifier = Modifier
-            .border(1.dp, Color(0xFF38434B), RoundedCornerShape(8.dp))
-            .clickable(onClick = onClick)
-            .padding(horizontal = 10.dp, vertical = 8.dp),
+        modifier = Modifier.background(riskColor(risk), RoundedCornerShape(8.dp)).padding(horizontal = 9.dp, vertical = 7.dp),
     ) {
-        Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(risk.name, color = Color(0xFF0E1113), fontSize = 13.sp, fontWeight = FontWeight.Bold)
     }
 }
 
 @Composable
 private fun TagChip(label: String) {
     Box(
-        modifier = Modifier
-            .background(Color(0xFF26323A), RoundedCornerShape(7.dp))
-            .padding(horizontal = 9.dp, vertical = 6.dp),
+        modifier = Modifier.background(Color(0xFF263039), RoundedCornerShape(7.dp)).padding(horizontal = 9.dp, vertical = 6.dp),
     ) {
         Text(label, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp)
     }
 }
 
 @Composable
-private fun StepNumber(number: Int, status: TaskStatus) {
+private fun AgentInitials(agent: AgentType) {
+    val initials = agent.label.split(" ").filter { it.firstOrNull()?.isLetter() == true }.take(2).joinToString("") { it.first().toString() }
     Box(
-        modifier = Modifier
-            .size(28.dp)
-            .background(statusColor(status), RoundedCornerShape(8.dp)),
+        modifier = Modifier.size(34.dp).background(agentColor(agent), RoundedCornerShape(8.dp)),
         contentAlignment = Alignment.Center,
     ) {
-        Text(number.toString(), color = Color(0xFF101316), fontSize = 12.sp, fontWeight = FontWeight.Bold)
+        Text(initials, color = Color(0xFF0E1113), fontSize = 12.sp, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -569,23 +408,10 @@ private fun StatusText(status: TaskStatus) {
 }
 
 @Composable
-private fun AgentIcon(agent: AgentType) {
-    val initials = agent.label.split(" ").filter { it.firstOrNull()?.isLetter() == true }.take(2).joinToString("") { it.first().toString() }
-    Box(
-        modifier = Modifier
-            .size(34.dp)
-            .background(agentColor(agent), RoundedCornerShape(8.dp)),
-        contentAlignment = Alignment.Center,
-    ) {
-        Text(initials, color = Color(0xFF101316), fontSize = 12.sp, fontWeight = FontWeight.Bold)
-    }
-}
-
-@Composable
 private fun GraphRow(entry: GraphEntry) {
-    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 5.dp), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(7.dp)) {
         Text(entry.node, color = MaterialTheme.colorScheme.onSurface, fontSize = 12.sp, modifier = Modifier.weight(0.9f))
-        Text(entry.relation, color = MaterialTheme.colorScheme.secondary, fontSize = 12.sp, modifier = Modifier.weight(0.9f))
+        Text(entry.relation, color = MaterialTheme.colorScheme.secondary, fontSize = 12.sp, modifier = Modifier.weight(0.8f))
         Text(entry.evidence, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, modifier = Modifier.weight(1.2f))
     }
 }
@@ -593,10 +419,7 @@ private fun GraphRow(entry: GraphEntry) {
 @Composable
 private fun AlertStrip(title: String, body: String) {
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(Color(0xFF252D35), RoundedCornerShape(8.dp))
-            .padding(11.dp),
+        modifier = Modifier.fillMaxWidth().background(Color(0xFF252D35), RoundedCornerShape(8.dp)).padding(11.dp),
     ) {
         Text(title, color = MaterialTheme.colorScheme.secondary, fontWeight = FontWeight.Bold, fontSize = 13.sp)
         Text(body, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp, lineHeight = 16.sp)
@@ -605,24 +428,24 @@ private fun AlertStrip(title: String, body: String) {
 
 private fun riskColor(risk: RiskLevel): Color = when (risk) {
     RiskLevel.L0 -> Color(0xFF7CE38B)
-    RiskLevel.L1 -> Color(0xFF3DE0B5)
-    RiskLevel.L2 -> Color(0xFFFFB454)
+    RiskLevel.L1 -> Color(0xFF2ED3B7)
+    RiskLevel.L2 -> Color(0xFFFFC857)
     RiskLevel.L3 -> Color(0xFFFF7A59)
     RiskLevel.L4 -> Color(0xFFFF4D6D)
 }
 
 private fun statusColor(status: TaskStatus): Color = when (status) {
     TaskStatus.Ready -> Color(0xFF58A6FF)
-    TaskStatus.WaitingForApproval -> Color(0xFFFFB454)
+    TaskStatus.WaitingForApproval -> Color(0xFFFFC857)
     TaskStatus.AuthRequired -> Color(0xFFFF7A59)
     TaskStatus.Blocked -> Color(0xFFFF4D6D)
-    TaskStatus.Complete -> Color(0xFF3DE0B5)
+    TaskStatus.Complete -> Color(0xFF2ED3B7)
 }
 
 private fun agentColor(agent: AgentType): Color = when (agent) {
     AgentType.Strategy -> Color(0xFFB7A6FF)
     AgentType.Research -> Color(0xFF58A6FF)
-    AgentType.Product -> Color(0xFF3DE0B5)
+    AgentType.Product -> Color(0xFF2ED3B7)
     AgentType.Builder -> Color(0xFFFFD166)
     AgentType.Content -> Color(0xFFFFB4C6)
     AgentType.PersonalAdmin -> Color(0xFF9EE493)

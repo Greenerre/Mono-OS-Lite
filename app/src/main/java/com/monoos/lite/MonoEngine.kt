@@ -67,6 +67,11 @@ data class ConversationTurn(
     val message: String,
 )
 
+data class ThinkingNote(
+    val stage: String,
+    val note: String,
+)
+
 data class InstructionRule(
     val layer: String,
     val directive: String,
@@ -84,7 +89,11 @@ data class MonoRun(
     val inputMode: String,
     val intent: String,
     val conversation: List<ConversationTurn>,
+    val thinkingNotes: List<ThinkingNote>,
     val compressedIntent: String,
+    val memoryRecordId: String,
+    val localLlmResponse: String,
+    val cloudLlmTrace: String,
     val instructionPacket: List<InstructionRule>,
     val memoryContext: List<String>,
     val graphMemory: List<GraphEntry>,
@@ -129,9 +138,13 @@ fun runMonoPipeline(command: String, inputMode: String = "Text", approved: Boole
     val memory = memoryContextFor(intent, lower)
     val compression = compressCommand(cleanCommand, intent, risk, agents.map { it.agent.label })
     val escalation = cloudEscalationFor(intent, risk)
+    val memoryRecordId = memoryRecordIdFor(cleanCommand, intent)
+    val localResponse = localLlmResponseFor(intent, risk, approved)
+    val cloudTrace = cloudTraceFor(intent, risk)
+    val thinking = buildThinkingNotes(cleanCommand, intent, compression, risk, agents, memoryRecordId, cloudTrace)
     val instructions = buildInstructionPacket(cleanCommand, inputMode, intent, compression, risk, approved, agents)
     val coverage = buildObjectiveCoverage(risk, workflow, agents, instructions, escalation)
-    val conversation = buildConversation(cleanCommand, inputMode, intent, risk, approved)
+    val conversation = buildConversation(cleanCommand, intent, risk, approved, localResponse, cloudTrace)
     val audit = buildAudit(cleanCommand, inputMode, intent, compression, risk, agents, workflow, escalation, instructions)
 
     return MonoRun(
@@ -139,7 +152,11 @@ fun runMonoPipeline(command: String, inputMode: String = "Text", approved: Boole
         inputMode = inputMode,
         intent = intent,
         conversation = conversation,
+        thinkingNotes = thinking,
         compressedIntent = compression,
+        memoryRecordId = memoryRecordId,
+        localLlmResponse = localResponse,
+        cloudLlmTrace = cloudTrace,
         instructionPacket = instructions,
         memoryContext = memory,
         graphMemory = graph,
@@ -215,7 +232,7 @@ private fun memoryContextFor(intent: String, lower: String): List<String> = when
     "Market research" -> listOf(
         "Market brief memory: competitor scan and buyer pain points",
         "Research preference: short action plan with assumptions called out",
-        "Source mode: simulated cloud LLM synthesis",
+        "Source mode: simulated ChatGPT synthesis",
     )
     "Personal admin planning" -> listOf(
         "Mock calendar: design review 9 AM, investor sync 1 PM, build block 3 PM",
@@ -248,7 +265,7 @@ private fun buildGraph(intent: String, lower: String, risk: RiskLevel): List<Gra
 }
 
 private fun visualTagsFor(intent: String, lower: String, risk: RiskLevel): List<String> {
-    val tags = mutableListOf("launcher:chat", "dashboard:pipeline", "risk:${risk.name}")
+    val tags = mutableListOf("launcher:chat", "panel:thinking-notes", "risk:${risk.name}")
     when (intent) {
         "Financial action" -> tags += listOf("app:banking-mock", "ui:auth-required", "entity:amount-500")
         "Sensitive communication" -> tags += listOf("app:mail-mock", "ui:draft-review", "entity:client")
@@ -294,10 +311,53 @@ private fun routeAgents(intent: String, risk: RiskLevel, approved: Boolean): Lis
 private fun cloudEscalationFor(intent: String, risk: RiskLevel): String = when {
     risk == RiskLevel.L4 -> "No escalation. Critical action is blocked locally."
     intent == "Financial action" -> "No cloud payload sent. Financial action is held locally behind auth."
-    intent == "Sensitive communication" -> "Simulated LLM drafts a reply from redacted mock context, then waits for approval."
-    intent == "Market research" || intent == "Product strategy planning" -> "Simulated cloud LLM expands strategy and research with no real personal data."
-    else -> "Local deterministic execution; cloud not needed."
+    intent == "Sensitive communication" -> "Simulated ChatGPT draft assist from redacted mock context, then waits for approval."
+    intent == "Market research" || intent == "Product strategy planning" -> "Simulated ChatGPT escalation expands strategy and research with no real personal data."
+    else -> "Simulated local Gemma execution; cloud not needed."
 }
+
+private fun memoryRecordIdFor(command: String, intent: String): String {
+    val hash = "$intent:$command".hashCode().let { if (it == Int.MIN_VALUE) 0 else kotlin.math.abs(it) }
+    return "mem-${hash.toString(16).padStart(6, '0').take(6)}"
+}
+
+private fun localLlmResponseFor(intent: String, risk: RiskLevel, approved: Boolean): String = when {
+    risk == RiskLevel.L4 -> "I cannot help execute that critical action in this demo. I can explain the risk and suggest a safer review path."
+    risk == RiskLevel.L3 && !approved -> "I found a financial instruction. I can prepare the semantic packet, but the action is held behind authentication and no money movement is simulated."
+    intent == "Financial action" -> "Authentication recorded for the demo. I prepared a mock transfer shell only; no banking integration or real funds are touched."
+    risk == RiskLevel.L2 && !approved -> "I drafted a concise client reply using redacted mock context and parked it for approval before release."
+    intent == "Sensitive communication" -> "Approved draft is ready in the mock workflow with an audit trail attached."
+    intent == "Product strategy planning" -> "Roadmap draft: validate the wedge, build a privacy-first Android demo, add approval gates, then package judge-ready proof."
+    intent == "Market research" -> "Action plan: define buyer segment, map 3 competitors, test privacy-first positioning, and convert findings into a one-week experiment."
+    intent == "Personal admin planning" -> "Tomorrow's priorities: protect the build block, prepare investor sync notes, and resolve the design review decisions."
+    else -> "I converted your request into a structured task plan with local memory and risk checks attached."
+}
+
+private fun cloudTraceFor(intent: String, risk: RiskLevel): String = when {
+    risk == RiskLevel.L4 -> "Local policy block: no cloud escalation for critical requests."
+    risk == RiskLevel.L3 -> "Local-only hold: financial payload is not sent to ChatGPT."
+    intent == "Product strategy planning" -> "ChatGPT escalation simulated for roadmap synthesis after local Gemma intent parsing."
+    intent == "Market research" -> "ChatGPT escalation simulated for market synthesis after local Gemma context compression."
+    intent == "Sensitive communication" -> "ChatGPT escalation simulated with redacted email facts; final draft remains approval-gated."
+    else -> "No ChatGPT escalation. Local Gemma simulation is sufficient for this low-risk task."
+}
+
+private fun buildThinkingNotes(
+    command: String,
+    intent: String,
+    compression: String,
+    risk: RiskLevel,
+    agents: List<AgentAssignment>,
+    memoryRecordId: String,
+    cloudTrace: String,
+): List<ThinkingNote> = listOf(
+    ThinkingNote("Observe", "Received text instruction: \"${command.take(72)}\""),
+    ThinkingNote("Classify", "Intent classifier mapped the request to $intent with ${risk.name} policy."),
+    ThinkingNote("Compress", "Semantic packet created: $compression"),
+    ThinkingNote("Index", "Stored semantic memory as $memoryRecordId and attached graph-relational edges."),
+    ThinkingNote("Route", "Assigned ${agents.joinToString { it.agent.label }}."),
+    ThinkingNote("Escalate", cloudTrace),
+)
 
 private fun buildInstructionPacket(
     command: String,
@@ -329,23 +389,25 @@ private fun buildInstructionPacket(
 
 private fun buildConversation(
     command: String,
-    inputMode: String,
     intent: String,
     risk: RiskLevel,
     approved: Boolean,
+    localResponse: String,
+    cloudTrace: String,
 ): List<ConversationTurn> {
-    val inputLabel = if (inputMode == "Mock voice") "Mock speech-to-text" else inputMode
     val gateMessage = when {
         risk == RiskLevel.L4 -> "I cannot run that in the demo because it is a critical action."
         risk == RiskLevel.L3 && !approved -> "I found a financial action. I prepared the workflow, but I need authentication before mock execution."
-        risk == RiskLevel.L2 && !approved -> "I drafted the sensitive output and parked it in the approval dashboard for you."
+        risk == RiskLevel.L2 && !approved -> "I drafted the sensitive output and parked it behind the approval gate for you."
         risk == RiskLevel.L2 || risk == RiskLevel.L3 -> "Approval is recorded. I will execute only the mocked workflow and keep the audit trace visible."
         else -> "I can run this safely with mock context and show every step."
     }
     return listOf(
         ConversationTurn("You", command),
-        ConversationTurn("Mono", "$inputLabel captured. I classified this as $intent."),
+        ConversationTurn("Mono", "Local Gemma simulation classified this as $intent."),
         ConversationTurn("Mono", gateMessage),
+        ConversationTurn("Mono", localResponse),
+        ConversationTurn("Mono", cloudTrace),
     )
 }
 
@@ -366,7 +428,7 @@ private fun buildWorkflow(intent: String, risk: RiskLevel, approved: Boolean): L
         else -> "Structured task plan prepared."
     }
     return listOf(
-        WorkflowStep("Capture intent", TaskStatus.Complete, "Command received through chat or mock voice."),
+        WorkflowStep("Capture intent", TaskStatus.Complete, "Command received through the chat box."),
         WorkflowStep("Classify and compress", TaskStatus.Complete, "Intent becomes a compact agent-readable task packet."),
         WorkflowStep("Retrieve memory", TaskStatus.Complete, "Mock memories and graph rows are attached."),
         WorkflowStep("Risk gate", gateStatus, risk.action),
@@ -384,14 +446,14 @@ private fun buildObjectiveCoverage(
     ObjectiveCoverage("App launches locally", true, "Verified on Android 35 AOSP ATD emulator and physical-device-ready APK"),
     ObjectiveCoverage("User can run demo presets", true, "Five preset commands are wired into the launcher"),
     ObjectiveCoverage("User can enter custom command", true, "Chat command field feeds the same pipeline"),
-    ObjectiveCoverage("Human-centric input layer shown", true, "Conversation bubbles, chat command, and mock speech-to-text preview are visible"),
+    ObjectiveCoverage("Human-centric input layer shown", true, "Simple chat UI, project sidebar, and visible thinking notes are shown"),
     ObjectiveCoverage("Intent classification works", true, "Intent classifier produces named intents per command"),
     ObjectiveCoverage("Compression output shown", true, "Semantic compressor emits compact task atoms"),
     ObjectiveCoverage("Memory indexing output shown", true, "Memory vault and graph-relational rows are displayed"),
     ObjectiveCoverage("Visual context indexing shown", true, "Visual tags are attached to every run"),
     ObjectiveCoverage("Agent routing shown", true, agents.joinToString { it.agent.label }),
     ObjectiveCoverage("Risk gate shown", true, "${risk.name}: ${risk.action}"),
-    ObjectiveCoverage("Approval dashboard works", true, "L2 waits for approval; L3 waits for authentication; L4 is blocked"),
+    ObjectiveCoverage("Approval gate works", true, "L2 waits for approval; L3 waits for authentication; L4 is blocked"),
     ObjectiveCoverage("Audit log records all steps", true, "Audit logger includes capture, classifier, compressor, memory, risk, routing, escalation, orchestration"),
     ObjectiveCoverage("Mock task status updates shown", true, workflow.joinToString { "${it.title}=${it.status}" }),
     ObjectiveCoverage("Cloud LLM escalation simulated", true, escalation),

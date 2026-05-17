@@ -11,6 +11,8 @@
 - Added unit tests proving instruction-layer L3 enforcement and objective coverage.
 - Added human-centric chat/voice input surface with conversation bubbles and mock speech-to-text preview.
 - Added animated SVG video-style demo in `demo/mono-os-lite-demo.svg`.
+- Simplified the Android UI into a chat-first experience with project sidebar, thinking notes, semantic memory receipt, local Gemma/Ollama simulation, ChatGPT escalation trace, approval gate, and audit trail.
+- Removed the visible speech-to-text prototype path from the app UI.
 - Built debug APK successfully.
 
 ## Verification

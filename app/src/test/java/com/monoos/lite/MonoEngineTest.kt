@@ -20,7 +20,8 @@ class MonoEngineTest {
 
         assertEquals("Product strategy planning", run.intent)
         assertTrue(run.agents.map { it.agent }.containsAll(listOf(AgentType.Strategy, AgentType.Research, AgentType.Product, AgentType.Builder)))
-        assertTrue(run.cloudEscalation.contains("Simulated cloud LLM"))
+        assertTrue(run.cloudEscalation.contains("Simulated ChatGPT"))
+        assertTrue(run.cloudLlmTrace.contains("ChatGPT escalation simulated"))
     }
 
     @Test
@@ -51,11 +52,21 @@ class MonoEngineTest {
     }
 
     @Test
-    fun humanInputLayerIncludesConversationAndMockSpeechToText() {
-        val run = runMonoPipeline("Research this market and create a short action plan", inputMode = "Mock voice")
+    fun chatInputLayerIncludesConversationThinkingAndMemoryIndex() {
+        val run = runMonoPipeline("Research this market and create a short action plan")
 
         assertTrue(run.conversation.any { it.speaker == "You" })
-        assertTrue(run.conversation.any { it.message.contains("Mock speech-to-text") })
+        assertTrue(run.conversation.any { it.message.contains("Local Gemma simulation") })
+        assertTrue(run.thinkingNotes.any { it.stage == "Compress" })
+        assertTrue(run.thinkingNotes.any { it.stage == "Index" && it.note.contains(run.memoryRecordId) })
+        assertTrue(run.memoryRecordId.startsWith("mem-"))
         assertTrue(run.objectiveCoverage.any { it.objective == "Human-centric input layer shown" })
+    }
+
+    @Test
+    fun financialTaskDoesNotSendCloudPayload() {
+        val run = runMonoPipeline("Move $500 to my savings account")
+
+        assertTrue(run.cloudLlmTrace.contains("not sent to ChatGPT"))
     }
 }

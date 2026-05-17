@@ -16,6 +16,16 @@ Examples:
 - `Prior user rule: never move money without authentication`
 - `Startup idea memory: privacy-first AI layer for mobile workflows`
 
+## Local memory record
+
+Each command also receives a deterministic local record id:
+
+```text
+mem-1a2b3c
+```
+
+The id represents the local semantic memory slot used by the prototype. It is generated from the command and classified intent; it is not synced to a backend.
+
 ## Graph-relational row
 
 The graph index is represented as rows:
@@ -37,7 +47,7 @@ VisualContextIndex | tags | launcher:chat, app:banking-mock, ui:auth-required
 Visual tags represent mock app and screen context:
 
 - `launcher:chat`
-- `dashboard:pipeline`
+- `panel:thinking-notes`
 - `app:calendar-mock`
 - `app:mail-mock`
 - `app:banking-mock`

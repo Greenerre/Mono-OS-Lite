@@ -17,33 +17,33 @@ Mono OS Lite is a single-module Android app:
 The core pipeline lives in `app/src/main/java/com/monoos/lite/MonoEngine.kt`.
 
 1. `Intent Classifier` maps raw text to a demo intent.
-2. `Semantic Compressor` converts the command into compact task atoms.
-3. `Instruction Layer` turns the compressed task into visible directives for privacy, memory, risk, approval, routing, and audit.
-4. `Memory Indexer` retrieves mock context relevant to the intent.
-5. `Graph-Relational Memory Layer` emits node/relation/evidence rows.
-6. `Visual Context Index` attaches synthetic UI and app tags.
-7. `Risk Gate Engine` assigns L0-L4 risk.
-8. `Agent Router` assigns one or more agents.
-9. `Approval Manager` gates L2/L3 flows.
-10. `Cloud LLM Escalation Layer` describes simulated escalation.
-11. `Mock App Orchestrator` creates workflow statuses.
-12. `Audit Logger` records every step.
+2. `Thinking Notes` expose observe, classify, compress, index, route, and escalation decisions.
+3. `Semantic Compressor` converts the command into compact task atoms.
+4. `Local LLM Simulation` returns a Gemma/Ollama-style response without a network dependency.
+5. `Instruction Layer` turns the compressed task into directives for privacy, memory, risk, approval, routing, and audit.
+6. `Memory Indexer` retrieves mock context and assigns a local memory record id.
+7. `Graph-Relational Memory Layer` emits node/relation/evidence rows.
+8. `Visual Context Index` attaches synthetic UI and app tags.
+9. `Risk Gate Engine` assigns L0-L4 risk.
+10. `Agent Router` assigns one or more agents.
+11. `Approval Manager` gates L2/L3 flows.
+12. `Cloud LLM Escalation Layer` describes simulated ChatGPT escalation for complex tasks.
+13. `Mock App Orchestrator` creates workflow statuses.
+14. `Audit Logger` records every step.
 
 ## UI composition
 
 `MainActivity.kt` renders a single scrollable AI control surface:
 
-- AI launcher interface
-- Human input layer with chat bubbles
-- Chat command box
-- Mock audio input button and speech-to-text preview
-- Context permissions dashboard
-- Instruction layer simulation
-- Workflow management dashboard
-- Visual agent task review dashboard
-- Memory vault dashboard
-- Approval dashboard
-- Goal coverage dashboard
+- Chat-first launcher
+- Conversation/project sidebar
+- Text command box
+- Thinking notes
+- Semantic memory panel
+- Graph-relational memory rows
+- Visual context tags
+- Execution and agent routing panel
+- Approval/authentication gate
 - Audit log panel
 
 ## Demo video artifact

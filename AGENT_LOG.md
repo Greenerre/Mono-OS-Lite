@@ -101,3 +101,11 @@
 - Added unit test coverage for conversation and mock speech-to-text output.
 - Added browser-playable animated SVG demo at `demo/mono-os-lite-demo.svg`.
 - Added `demo/VIDEO_DEMO.md` with usage and recording guidance.
+
+### Chat-first simplification pass
+
+- Removed the visible speech-to-text prototype path from the Android UI.
+- Rebuilt `MainActivity.kt` around a simple chatbot, conversation/project sidebar, text input, thinking notes, semantic memory, execution, approval, and audit panels.
+- Added engine outputs for thinking notes, deterministic memory record ids, simulated local Gemma/Ollama responses, and simulated ChatGPT escalation traces.
+- Chose simulation over direct Ollama integration for this pass because emulator/device networking would add risk inside the 30-minute prototype window.
+- Updated unit tests for chat input, thinking notes, memory indexing, ChatGPT escalation, and financial no-cloud policy.
